@@ -1,80 +1,50 @@
-// Instagram Graph API — cobre SOMENTE o perfil autenticado (você), via login oficial
-// "Entrar com Facebook", exigindo conta Instagram Business/Creator vinculada a uma Página do Facebook.
-// Docs: https://developers.facebook.com/docs/instagram-api
+// Instagram API with Instagram Login — cobre SOMENTE o seu próprio perfil Business/Creator.
+// Neste fluxo mais novo da Meta, o token de acesso é gerado direto no painel de desenvolvedores
+// (Casos de uso -> Gerenciar mensagens e conteúdo no Instagram -> Gerar tokens de acesso ->
+// Adicionar conta), então o app não precisa implementar o redirect OAuth completo — só chama
+// a Graph API do Instagram (graph.instagram.com) usando o token que você colou no dashboard.
 
-const GRAPH_BASE = "https://graph.facebook.com/v19.0";
+const GRAPH_BASE = "https://graph.instagram.com/v21.0";
 
-export function getInstagramLoginUrl() {
-  const appId = process.env.META_APP_ID!;
-  const redirectUri = process.env.META_REDIRECT_URI!;
-  const scopes = [
-    "instagram_basic",
-    "instagram_manage_insights",
-    "pages_show_list",
-    "pages_read_engagement",
-  ].join(",");
-
-  const params = new URLSearchParams({
-    client_id: appId,
-    redirect_uri: redirectUri,
-    scope: scopes,
-    response_type: "code",
-  });
-
-  return `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`;
-}
-
-export async function exchangeCodeForToken(code: string) {
-  const params = new URLSearchParams({
-    client_id: process.env.META_APP_ID!,
-    client_secret: process.env.META_APP_SECRET!,
-    redirect_uri: process.env.META_REDIRECT_URI!,
-    code,
-  });
-
-  const res = await fetch(`${GRAPH_BASE}/oauth/access_token?${params.toString()}`);
-  if (!res.ok) throw new Error(`Falha ao trocar code por token: ${await res.text()}`);
-  return res.json() as Promise<{ access_token: string; token_type: string; expires_in: number }>;
-}
-
-// Descobre a Página do Facebook vinculada e a conta Instagram Business associada a ela.
-export async function getInstagramBusinessAccount(userAccessToken: string) {
-  const pagesRes = await fetch(
-    `${GRAPH_BASE}/me/accounts?access_token=${userAccessToken}`
+export async function validateAndFetchProfile(accessToken: string) {
+  const res = await fetch(
+    `${GRAPH_BASE}/me?fields=user_id,username,account_type,media_count&access_token=${accessToken}`
   );
-  const pagesData = await pagesRes.json();
-  const page = pagesData?.data?.[0];
-  if (!page) throw new Error("Nenhuma Página do Facebook encontrada para esta conta.");
-
-  const igRes = await fetch(
-    `${GRAPH_BASE}/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`
-  );
-  const igData = await igRes.json();
-  const igAccountId = igData?.instagram_business_account?.id;
-  if (!igAccountId) throw new Error("Nenhuma conta Instagram Business/Creator vinculada a essa Página.");
-
-  return { igAccountId, pageAccessToken: page.access_token as string };
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Token inválido ou expirado: ${body}`);
+  }
+  return res.json() as Promise<{
+    user_id: string;
+    username: string;
+    account_type: string;
+    media_count: number;
+  }>;
 }
 
-export async function getOwnProfileMetrics(igAccountId: string, pageAccessToken: string) {
-  const fields = [
-    "username",
-    "followers_count",
-    "follows_count",
-    "media_count",
-    "biography",
-    "profile_picture_url",
-  ].join(",");
-
+export async function getOwnProfileMetrics(accessToken: string) {
   const profileRes = await fetch(
-    `${GRAPH_BASE}/${igAccountId}?fields=${fields}&access_token=${pageAccessToken}`
+    `${GRAPH_BASE}/me?fields=user_id,username,account_type,media_count,followers_count,follows_count&access_token=${accessToken}`
   );
   const profile = await profileRes.json();
 
   const mediaRes = await fetch(
-    `${GRAPH_BASE}/${igAccountId}/media?fields=id,caption,media_type,timestamp,like_count,comments_count,permalink&limit=25&access_token=${pageAccessToken}`
+    `${GRAPH_BASE}/me/media?fields=id,caption,media_type,timestamp,like_count,comments_count,permalink&limit=25&access_token=${accessToken}`
   );
   const media = await mediaRes.json();
 
   return { profile, media: media?.data ?? [] };
+}
+
+// Troca um token de curta duração por um de longa duração (~60 dias).
+// Útil se, no futuro, você quiser automatizar a renovação do token.
+export async function exchangeForLongLivedToken(shortLivedToken: string) {
+  const params = new URLSearchParams({
+    grant_type: "ig_exchange_token",
+    client_secret: process.env.INSTAGRAM_APP_SECRET!,
+    access_token: shortLivedToken,
+  });
+  const res = await fetch(`${GRAPH_BASE}/access_token?${params.toString()}`);
+  if (!res.ok) throw new Error(`Falha ao trocar por token de longa duração: ${await res.text()}`);
+  return res.json() as Promise<{ access_token: string; token_type: string; expires_in: number }>;
 }
