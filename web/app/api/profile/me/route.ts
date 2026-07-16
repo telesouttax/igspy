@@ -19,7 +19,7 @@ export async function GET() {
   }
 
   try {
-    const metrics = await getOwnProfileMetrics(data.ig_account_id, data.page_access_token);
+    const metrics = await getOwnProfileMetrics(data.access_token);
     return NextResponse.json({ conectado: true, ...metrics });
   } catch (err: any) {
     return NextResponse.json({ conectado: false, erro: err.message }, { status: 500 });
