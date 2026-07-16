@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getOwnProfileMetrics } from "@/lib/instagram";
+import ConnectInstagramForm from "./ConnectInstagramForm";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ async function getOwnProfile() {
       .maybeSingle();
 
     if (!data) return null;
-    return await getOwnProfileMetrics(data.ig_account_id, data.page_access_token);
+    return await getOwnProfileMetrics(data.access_token);
   } catch {
     return null;
   }
@@ -45,7 +46,7 @@ export default async function DashboardPage() {
       {!own ? (
         <div className="empty-state">
           <p style={{ marginBottom: 16 }}>Seu Instagram ainda não está conectado.</p>
-          <a className="btn" href="/api/auth/instagram">Conectar meu Instagram</a>
+          <ConnectInstagramForm />
         </div>
       ) : (
         <div className="grid">
