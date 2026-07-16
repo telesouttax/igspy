@@ -38,18 +38,24 @@ gh repo create nicho-insights --private --source=. --push
    - `Project URL` → vai virar `NEXT_PUBLIC_SUPABASE_URL`
    - `service_role key` (não a `anon` key!) → vai virar `SUPABASE_SERVICE_ROLE_KEY`
 
-## 3. Crie o App da Meta (para logar no SEU Instagram via API oficial)
+## 3. Configure o app da Meta (para conectar SEU Instagram)
 
 1. Acesse https://developers.facebook.com/apps → **Criar app** → tipo **Negócios**
-2. Adicione o produto **Instagram Graph API** (dentro de "Produtos")
-3. Sua conta do Instagram precisa ser **Business ou Creator** e estar vinculada a uma
-   **Página do Facebook** (isso é exigência da própria Meta, não tem como pular essa etapa)
-4. Em **Configurações → Básico**, copie o `App ID` e `App Secret`
-5. Em **Facebook Login → Configurações**, adicione a URL de redirecionamento:
-   `https://SEU-PROJETO.vercel.app/api/auth/instagram/callback`
-6. Enquanto o app estiver em modo "Desenvolvimento", só contas adicionadas como
-   testadoras/administradoras do app conseguem logar — isso é suficiente para você analisar o
-   seu próprio perfil, não precisa submeter para revisão da Meta.
+2. Em **Casos de uso**, adicione **"Gerenciar mensagens e conteúdo no Instagram"**
+3. Dentro desse caso de uso, clique em **"Add all required permissions"**
+4. Vá em **Funções** → adicione sua própria conta do Instagram como **Testador do Instagram** →
+   aceite o convite pelo app do Instagram no celular (Configurações → Apps e sites)
+5. Volte no caso de uso → passo **"2. Gerar tokens de acesso"** → **Adicionar conta** →
+   selecione sua conta → gere o token de acesso
+6. Copie esse token — você vai colar ele direto no dashboard depois do deploy (não precisa
+   guardar em nenhuma variável de ambiente; ele fica salvo no Supabase quando você conecta)
+
+⚠️ Esse token expira em ~60 dias. Quando expirar, é só gerar um novo no mesmo painel e colar
+de novo no dashboard.
+
+(Opcional) Se quiser automatizar a renovação do token no futuro, guarde também a **"Chave
+secreta do app do Instagram"** (aparece na mesma tela) como `INSTAGRAM_APP_SECRET` — não é
+obrigatório para o funcionamento básico.
 
 ## 4. Configure o Google Gemini (gratuito)
 
@@ -82,8 +88,8 @@ pessoal (várias análises por dia sem custo).
 
 ## 7. Uso
 
-1. Acesse `https://SEU-PROJETO.vercel.app/dashboard` e clique em **Conectar meu Instagram**
-   para autorizar via OAuth oficial e ver suas próprias métricas.
+1. Acesse `https://SEU-PROJETO.vercel.app/dashboard` e cole o token gerado no painel da Meta
+   para ver suas próprias métricas (seguidores, publicações, etc).
 2. Navegue normalmente até o perfil de alguém no seu nicho no Instagram (`instagram.com/perfil`).
 3. Clique no botão flutuante **🔎 Analisar perfil neste nicho** que aparece no canto da tela.
 4. A extensão extrai os dados visíveis, manda pro backend, o Gemini gera a análise, e ela
