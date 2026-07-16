@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { generateNicheInsight, ScrapedProfile } from "@/lib/claude";
+import { generateNicheInsight, ScrapedProfile } from "@/lib/ai";
 
 function isAuthorized(req: NextRequest) {
   const auth = req.headers.get("authorization") ?? "";
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro: saveError.message }, { status: 500 });
   }
 
-  // 2. Gera a análise automaticamente com a Claude API
+  // 2. Gera a análise automaticamente com o Gemini
   let insight;
   try {
     insight = await generateNicheInsight(body);
