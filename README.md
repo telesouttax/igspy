@@ -1,6 +1,6 @@
 # Nicho Insights
 
-Ferramenta de análise de perfis do Instagram por nicho, com IA (Claude), pensada em 3 peças:
+Ferramenta de análise de perfis do Instagram por nicho, com IA (Google Gemini — gratuito), pensada em 3 peças:
 
 1. **`/web`** — dashboard Next.js, hospedado na Vercel. Mostra as métricas do SEU perfil (via
    Instagram Graph API oficial, login OAuth) e os insights gerados a partir dos dados que a
@@ -51,16 +51,21 @@ gh repo create nicho-insights --private --source=. --push
    testadoras/administradoras do app conseguem logar — isso é suficiente para você analisar o
    seu próprio perfil, não precisa submeter para revisão da Meta.
 
-## 4. Configure a Claude API
+## 4. Configure o Google Gemini (gratuito)
 
-1. Crie uma chave em https://console.anthropic.com
-2. Isso vai virar `ANTHROPIC_API_KEY`
+1. Acesse https://aistudio.google.com/apikey
+2. Faça login com sua conta Google
+3. Clique em **Create API key** → copie o valor gerado
+4. Isso vai virar `GEMINI_API_KEY`
+
+O tier gratuito do Gemini tem limite de requisições por minuto/dia, mas é suficiente para uso
+pessoal (várias análises por dia sem custo).
 
 ## 5. Deploy na Vercel
 
 1. Importe o repositório do GitHub na Vercel, apontando o **Root Directory** para `/web`
 2. Em **Settings → Environment Variables**, adicione todas as variáveis de `web/.env.example`
-   preenchidas (Supabase, Anthropic, Meta, e um `EXTENSION_API_TOKEN` — qualquer string aleatória
+   preenchidas (Supabase, Gemini, Meta, e um `EXTENSION_API_TOKEN` — qualquer string aleatória
    longa que você mesmo inventa)
 3. Faça o deploy. Anote a URL final (ex: `https://nicho-insights.vercel.app`)
 4. Volte no painel da Meta e confirme que a `META_REDIRECT_URI` bate exatamente com essa URL
@@ -81,7 +86,7 @@ gh repo create nicho-insights --private --source=. --push
    para autorizar via OAuth oficial e ver suas próprias métricas.
 2. Navegue normalmente até o perfil de alguém no seu nicho no Instagram (`instagram.com/perfil`).
 3. Clique no botão flutuante **🔎 Analisar perfil neste nicho** que aparece no canto da tela.
-4. A extensão extrai os dados visíveis, manda pro backend, a Claude API gera a análise, e ela
+4. A extensão extrai os dados visíveis, manda pro backend, o Gemini gera a análise, e ela
    aparece automaticamente no dashboard.
 5. Para uma análise mais profunda de um post/reel específico, abra ele individualmente e clique
    em **🔎 Adicionar este post à análise** — isso captura legenda, likes, comments e views daquele
