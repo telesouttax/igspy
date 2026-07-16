@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      width: 280px;
+      font-family: -apple-system, sans-serif;
+      background: #0F1220;
+      color: #E8E9F3;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 15px;
+      margin: 0 0 12px;
+    }
+    label {
+      font-size: 11px;
+      color: #8B90AC;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      background: #171B2E;
+      border: 1px solid #272C46;
+      color: #E8E9F3;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    button {
+      margin-top: 16px;
+      width: 100%;
+      background: #F2A93B;
+      color: #171200;
+      font-weight: 600;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    #status {
+      font-size: 12px;
+      margin-top: 8px;
+      color: #5EEAD4;
+      min-height: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚙️ Nicho Insights</h1>
+
+  <label for="backendUrl">URL do backend (Vercel)</label>
+  <input id="backendUrl" placeholder="https://seu-projeto.vercel.app" />
+
+  <label for="apiToken">Token da extensão</label>
+  <input id="apiToken" type="password" placeholder="mesmo token do EXTENSION_API_TOKEN" />
+
+  <label for="niche">Nicho padrão (opcional)</label>
+  <input id="niche" placeholder="ex: moda feminina, fitness, marketing" />
+
+  <button id="save">Salvar</button>
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

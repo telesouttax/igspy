@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Nicho Insights — Analisador de Perfis",
+  "version": "0.1.0",
+  "description": "Extrai dados visíveis de perfis públicos do Instagram (bio, posts, reels, métricas) e envia para o Nicho Insights analisar com IA.",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": [
+    "https://www.instagram.com/*",
+    "https://*.vercel.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.instagram.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Nicho Insights"
+  }
+}
