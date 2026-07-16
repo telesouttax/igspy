@@ -1,6 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export type ScrapedPost = {
   type: "reel" | "post" | "carousel";
@@ -54,15 +54,13 @@ ${JSON.stringify(profile, null, 2)}
 
 Gere a análise conforme o formato pedido.`;
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1500,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userMessage }],
+  const model = client.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: SYSTEM_PROMPT,
   });
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  const raw = textBlock && "text" in textBlock ? textBlock.text : "{}";
+  const result = await model.generateContent(userMessage);
+  const raw = result.response.text();
   const clean = raw.replace(/```json|```/g, "").trim();
 
   try {
