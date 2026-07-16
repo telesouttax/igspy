@@ -12,19 +12,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro: "Envie { access_token }." }, { status: 400 });
   }
 
+  let profile;
   try {
-    const profile = await validateAndFetchProfile(access_token);
-
-    const supabase = getSupabaseAdmin();
-    await supabase.from("instagram_accounts").upsert({
-      ig_user_id: profile.user_id,
-      access_token,
-      username: profile.username,
-      updated_at: new Date().toISOString(),
-    });
-
-    return NextResponse.json({ ok: true, username: profile.username });
+    profile = await validateAndFetchProfile(access_token);
   } catch (err: any) {
-    return NextResponse.json({ erro: err.message }, { status: 400 });
+    return NextResponse.json({ erro: `Token inválido: ${err.message}` }, { status: 400 });
   }
+
+  const supabase = getSupabaseAdmin();
+  const { error: dbError } = await supabase.from("instagram_accounts").upsert({
+    ig_user_id: profile.user_id,
+    access_token,
+    username: profile.username,
+    updated_at: new Date().toISOString(),
+  });
+
+  if (dbError) {
+    return NextResponse.json(
+      { erro: `Token validado, mas falhou ao salvar no banco: ${dbError.message}` },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ ok: true, username: profile.username });
 }
