@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { generateNicheInsight } from "@/lib/claude";
+import { generateNicheInsight } from "@/lib/ai";
 
 export async function POST(req: NextRequest) {
   const { scraped_profile_id } = await req.json();
