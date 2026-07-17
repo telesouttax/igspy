@@ -24,12 +24,12 @@ export async function validateAndFetchProfile(accessToken: string) {
 
 export async function getOwnProfileMetrics(accessToken: string) {
   const profileRes = await fetch(
-    `${GRAPH_BASE}/me?fields=user_id,username,account_type,media_count,followers_count,follows_count&access_token=${accessToken}`
+    `${GRAPH_BASE}/me?fields=user_id,username,name,account_type,media_count,followers_count,follows_count,profile_picture_url&access_token=${accessToken}`
   );
   const profile = await profileRes.json();
 
   const mediaRes = await fetch(
-    `${GRAPH_BASE}/me/media?fields=id,caption,media_type,timestamp,like_count,comments_count,permalink&limit=25&access_token=${accessToken}`
+    `${GRAPH_BASE}/me/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count,permalink&limit=25&access_token=${accessToken}`
   );
   const media = await mediaRes.json();
 
