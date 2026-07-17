@@ -55,7 +55,7 @@ ${JSON.stringify(profile, null, 2)}
 Gere a análise conforme o formato pedido.`;
 
   const model = client.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-flash-latest",
     systemInstruction: SYSTEM_PROMPT,
   });
 
