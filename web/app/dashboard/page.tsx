@@ -65,11 +65,23 @@ export default async function DashboardPage() {
       {own?.erro ? (
         <div className="empty-state" style={{ borderColor: "var(--danger)" }}>
           <p style={{ marginBottom: 16, color: "var(--danger)" }}>{own.erro}</p>
+          <a className="btn" href="/api/auth/instagram/login" style={{ marginBottom: 16, display: "inline-flex" }}>
+            Conectar com Instagram
+          </a>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "16px 0 8px" }}>
+            Ou, se preferir, cole um token gerado manualmente:
+          </p>
           <ConnectInstagramForm />
         </div>
       ) : !own ? (
         <div className="empty-state">
           <p style={{ marginBottom: 16 }}>Seu Instagram ainda não está conectado.</p>
+          <a className="btn" href="/api/auth/instagram/login" style={{ marginBottom: 16, display: "inline-flex" }}>
+            Conectar com Instagram
+          </a>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "16px 0 8px" }}>
+            Ou, se preferir, cole um token gerado manualmente:
+          </p>
           <ConnectInstagramForm />
         </div>
       ) : (
