@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getOwnProfileMetrics } from "@/lib/instagram";
 import ConnectInstagramForm from "./ConnectInstagramForm";
+import DisconnectButton from "./DisconnectButton";
 
 export const dynamic = "force-dynamic";
 
@@ -65,24 +66,51 @@ export default async function DashboardPage() {
           <ConnectInstagramForm />
         </div>
       ) : (
-        <div className="grid">
-          <div className="card">
-            <p className="card-title">Seguidores</p>
-            <p className="metric">{own.profile.followers_count ?? "—"}</p>
+        <>
+          <div className="profile-header">
+            {own.profile.profile_picture_url && (
+              <img src={own.profile.profile_picture_url} alt={own.profile.username} className="profile-avatar" />
+            )}
+            <div style={{ flex: 1 }}>
+              <p className="profile-name">{own.profile.name || own.profile.username}</p>
+              <p className="profile-username">@{own.profile.username}</p>
+            </div>
+            <DisconnectButton />
           </div>
-          <div className="card">
-            <p className="card-title">Publicações</p>
-            <p className="metric">{own.profile.media_count ?? "—"}</p>
+
+          <div className="grid">
+            <div className="card">
+              <p className="card-title">Seguidores</p>
+              <p className="metric">{own.profile.followers_count ?? "—"}</p>
+            </div>
+            <div className="card">
+              <p className="card-title">Publicações</p>
+              <p className="metric">{own.profile.media_count ?? "—"}</p>
+            </div>
+            <div className="card">
+              <p className="card-title">Seguindo</p>
+              <p className="metric">{own.profile.follows_count ?? "—"}</p>
+            </div>
+            <div className="card">
+              <p className="card-title">Tipo de conta</p>
+              <p className="metric accent" style={{ fontSize: 16 }}>{own.profile.account_type ?? "—"}</p>
+            </div>
           </div>
-          <div className="card">
-            <p className="card-title">Seguindo</p>
-            <p className="metric">{own.profile.follows_count ?? "—"}</p>
-          </div>
-          <div className="card">
-            <p className="card-title">Últimas publicações analisadas</p>
-            <p className="metric accent">{own.media?.length ?? 0}</p>
-          </div>
-        </div>
+
+          {own.media?.length > 0 && (
+            <div className="posts-grid">
+              {own.media.map((post: any) => (
+                <a key={post.id} href={post.permalink} target="_blank" rel="noreferrer" className="post-thumb">
+                  <img src={post.thumbnail_url || post.media_url} alt={post.caption?.slice(0, 40) || "post"} />
+                  <div className="post-thumb-stats">
+                    <span>♥ {post.like_count ?? 0}</span>
+                    <span>💬 {post.comments_count ?? 0}</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <div className="section">
