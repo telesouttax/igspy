@@ -10,6 +10,7 @@ import {
 import ConnectInstagramForm from "./ConnectInstagramForm";
 import DisconnectButton from "./DisconnectButton";
 import DeleteInsightButton from "./DeleteInsightButton";
+import GenerateRecommendationsButton from "./GenerateRecommendationsButton";
 
 export const dynamic = "force-dynamic";
 
@@ -54,8 +55,27 @@ async function getInsights() {
   }
 }
 
+async function getLatestRecommendation() {
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data } = await supabase
+      .from("recommendations")
+      .select("recommendation, created_at")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export default async function DashboardPage() {
-  const [ownRaw, insights] = await Promise.all([getOwnProfile(), getInsights()]);
+  const [ownRaw, insights, latestRecommendation] = await Promise.all([
+    getOwnProfile(),
+    getInsights(),
+    getLatestRecommendation(),
+  ]);
   const own: any = ownRaw;
 
   return (
@@ -314,6 +334,83 @@ export default async function DashboardPage() {
           )}
         </>
       )}
+
+      <div className="section">
+        <div className="section-header">
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, margin: 0 }}>
+            Recomendações estratégicas para o seu perfil
+          </h2>
+        </div>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 16 }}>
+          Cruza os dados do seu perfil com todas as análises de nicho já feitas, e gera um plano de
+          ação específico pra você replicar.
+        </p>
+
+        <GenerateRecommendationsButton />
+
+        {latestRecommendation && (
+          <div className="insight-card" style={{ marginTop: 20 }}>
+            <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 10 }}>
+              Gerado em {new Date(latestRecommendation.created_at).toLocaleString("pt-BR")}
+            </p>
+            {(() => {
+              const rec = latestRecommendation.recommendation ?? {};
+              return (
+                <div className="insight-body">
+                  {rec.resumo_estrategico && <p>{rec.resumo_estrategico}</p>}
+
+                  {rec.prioridades && (
+                    <>
+                      <strong style={{ fontSize: 13 }}>Prioridades</strong>
+                      <ul>
+                        {rec.prioridades.map((x: string, i: number) => (
+                          <li key={i}>{x}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+
+                  {rec.plano_de_acao && (
+                    <>
+                      <strong style={{ fontSize: 13 }}>Plano de ação</strong>
+                      <ul>
+                        {rec.plano_de_acao.map((x: any, i: number) => (
+                          <li key={i}>
+                            <strong>{x.acao}</strong>
+                            {x.porque && <> — <span style={{ color: "var(--text-muted)" }}>{x.porque}</span></>}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+
+                  {rec.formatos_recomendados && (
+                    <>
+                      <strong style={{ fontSize: 13 }}>Formatos recomendados</strong>
+                      <ul>
+                        {rec.formatos_recomendados.map((x: string, i: number) => (
+                          <li key={i}>{x}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+
+                  {rec.o_que_parar_de_fazer && rec.o_que_parar_de_fazer.length > 0 && (
+                    <>
+                      <strong style={{ fontSize: 13 }}>O que parar de fazer</strong>
+                      <ul>
+                        {rec.o_que_parar_de_fazer.map((x: string, i: number) => (
+                          <li key={i}>{x}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+      </div>
 
       <div className="section">
         <div className="section-header">
