@@ -8,7 +8,8 @@ const GRAPH_BASE = "https://graph.instagram.com/v21.0";
 
 export async function validateAndFetchProfile(accessToken: string) {
   const res = await fetch(
-    `${GRAPH_BASE}/me?fields=user_id,username,account_type,media_count&access_token=${accessToken}`
+    `${GRAPH_BASE}/me?fields=user_id,username,account_type,media_count&access_token=${accessToken}`,
+    { cache: "no-store" }
   );
   if (!res.ok) {
     const body = await res.text();
@@ -24,12 +25,14 @@ export async function validateAndFetchProfile(accessToken: string) {
 
 export async function getOwnProfileMetrics(accessToken: string) {
   const profileRes = await fetch(
-    `${GRAPH_BASE}/me?fields=user_id,username,name,account_type,media_count,followers_count,follows_count,profile_picture_url&access_token=${accessToken}`
+    `${GRAPH_BASE}/me?fields=user_id,username,name,account_type,media_count,followers_count,follows_count,profile_picture_url&access_token=${accessToken}`,
+    { cache: "no-store" }
   );
   const profile = await profileRes.json();
 
   const mediaRes = await fetch(
-    `${GRAPH_BASE}/me/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count,permalink&limit=25&access_token=${accessToken}`
+    `${GRAPH_BASE}/me/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count,permalink&limit=25&access_token=${accessToken}`,
+    { cache: "no-store" }
   );
   const media = await mediaRes.json();
 
