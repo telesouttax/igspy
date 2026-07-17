@@ -9,6 +9,7 @@ import {
 } from "@/lib/insights";
 import ConnectInstagramForm from "./ConnectInstagramForm";
 import DisconnectButton from "./DisconnectButton";
+import DeleteInsightButton from "./DeleteInsightButton";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ async function getInsights() {
     const supabase = getSupabaseAdmin();
     const { data } = await supabase
       .from("insights")
-      .select("id, insight, created_at, scraped_profiles(username, niche)")
+      .select("id, scraped_profile_id, insight, created_at, scraped_profiles(username, niche)")
       .order("created_at", { ascending: false })
       .limit(30);
     return data ?? [];
@@ -342,6 +343,7 @@ export default async function DashboardPage() {
                         score <b>{ins.score_potencial}</b>/100
                       </span>
                     )}
+                    <DeleteInsightButton scrapedProfileId={item.scraped_profile_id} />
                   </div>
                 </div>
                 <div className="insight-body">
