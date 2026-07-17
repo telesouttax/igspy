@@ -1,0 +1,21 @@
+# ---- Supabase (banco de dados) ----
+# Crie um projeto grátis em https://supabase.com
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# ---- Google Gemini (gratuito, gera os insights) ----
+# Crie a chave em https://aistudio.google.com/apikey
+GEMINI_API_KEY=
+
+# ---- Instagram API with Instagram Login (para o SEU próprio perfil) ----
+# App ID e App Secret ficam em: painel da Meta > Casos de uso > Gerenciar mensagens
+# e conteúdo no Instagram > "ID do app do Instagram" e "Chave secreta do app do Instagram"
+# (são diferentes do App ID/Secret do Facebook)
+INSTAGRAM_APP_ID=
+INSTAGRAM_APP_SECRET=
+# URL pública do seu deploy na Vercel + /api/auth/instagram/callback
+INSTAGRAM_REDIRECT_URI=https://SEU-PROJETO.vercel.app/api/auth/instagram/callback
+
+# ---- Segurança extensão <-> backend ----
+# Token que a extensão vai enviar no header Authorization. Gere qualquer string aleatória longa.
+EXTENSION_API_TOKEN=troque-por-um-token-aleatorio-longo
