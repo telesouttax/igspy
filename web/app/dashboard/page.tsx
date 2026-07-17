@@ -1,5 +1,12 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getOwnProfileMetrics } from "@/lib/instagram";
+import {
+  getAccountOverview,
+  getReachByContentType,
+  getFollowerDemographics,
+  getOnlineFollowers,
+  getRecentPostsInsights,
+} from "@/lib/insights";
 import ConnectInstagramForm from "./ConnectInstagramForm";
 import DisconnectButton from "./DisconnectButton";
 
@@ -18,7 +25,15 @@ async function getOwnProfile() {
   if (!data) return null;
 
   try {
-    return await getOwnProfileMetrics(data.access_token);
+    const metrics = await getOwnProfileMetrics(data.access_token);
+    const [overview, reachByType, demographics, onlineFollowers, postInsights] = await Promise.all([
+      getAccountOverview(data.access_token),
+      getReachByContentType(data.access_token),
+      getFollowerDemographics(data.access_token),
+      getOnlineFollowers(data.access_token),
+      getRecentPostsInsights(metrics.media, data.access_token),
+    ]);
+    return { ...metrics, overview, reachByType, demographics, onlineFollowers, postInsights };
   } catch (err: any) {
     return { erro: `Token salvo, mas falhou ao buscar métricas: ${err.message}` };
   }
@@ -89,17 +104,199 @@ export default async function DashboardPage() {
             </div>
           </div>
 
+          {/* Visão geral */}
+          <div className="section-header" style={{ marginTop: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 15, margin: 0, color: "var(--text-muted)" }}>
+              Visão geral da conta
+            </h2>
+          </div>
+          <div className="grid">
+            <div className="card">
+              <p className="card-title">Contas alcançadas (hoje)</p>
+              <p className="metric">{own.overview?.reach ?? "—"}</p>
+            </div>
+            <div className="card">
+              <p className="card-title">Contas com engajamento (hoje)</p>
+              <p className="metric">{own.overview?.accounts_engaged ?? "—"}</p>
+            </div>
+            <div className="card">
+              <p className="card-title">Interações totais (hoje)</p>
+              <p className="metric">{own.overview?.total_interactions ?? "—"}</p>
+            </div>
+            <div className="card">
+              <p className="card-title">Visitas ao perfil (hoje)</p>
+              <p className="metric accent">{own.overview?.profile_views ?? "—"}</p>
+            </div>
+          </div>
+          {Object.keys(own.overview ?? {}).length === 0 && (
+            <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>
+              Essas métricas exigem a permissão <strong>instagram_business_manage_insights</strong> no
+              token — adicione ela no painel da Meta e gere um token novo pra liberar essa seção.
+            </p>
+          )}
+
+          {/* Alcance e distribuição */}
+          <div className="section-header" style={{ marginTop: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 15, margin: 0, color: "var(--text-muted)" }}>
+              Alcance por tipo de conteúdo
+            </h2>
+          </div>
+          {own.reachByType && Object.keys(own.reachByType).length > 0 ? (
+            <div className="grid">
+              {Object.entries(own.reachByType).map(([tipo, valor]) => (
+                <div className="card" key={tipo}>
+                  <p className="card-title">{tipo}</p>
+                  <p className="metric">{valor as number}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Ainda não disponível (mesma permissão acima).</p>
+          )}
+
+          {/* Curtidas/comentários agregados já calculados */}
+          <div className="section-header" style={{ marginTop: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 15, margin: 0, color: "var(--text-muted)" }}>
+              Engajamento recente ({own.media?.length ?? 0} posts)
+            </h2>
+          </div>
+          {own.aggregates && (
+            <div className="grid">
+              <div className="card">
+                <p className="card-title">Total de curtidas</p>
+                <p className="metric">{own.aggregates.totalLikes}</p>
+              </div>
+              <div className="card">
+                <p className="card-title">Total de comentários</p>
+                <p className="metric">{own.aggregates.totalComments}</p>
+              </div>
+              <div className="card">
+                <p className="card-title">Média de curtidas/post</p>
+                <p className="metric accent">{own.aggregates.avgLikes}</p>
+              </div>
+              <div className="card">
+                <p className="card-title">Média de comentários/post</p>
+                <p className="metric accent">{own.aggregates.avgComments}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Dados do público */}
+          <div className="section-header" style={{ marginTop: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 15, margin: 0, color: "var(--text-muted)" }}>
+              Dados do público
+            </h2>
+          </div>
+          {own.demographics?.porPais?.length > 0 ||
+          own.demographics?.porCidade?.length > 0 ||
+          own.demographics?.porIdadeGenero?.length > 0 ? (
+            <div className="grid">
+              {own.demographics.porPais?.length > 0 && (
+                <div className="card">
+                  <p className="card-title">Principais países</p>
+                  {own.demographics.porPais.map((p: any) => (
+                    <p key={p.pais} style={{ fontSize: 13, marginTop: 4 }}>{p.pais}: <b>{p.valor}</b></p>
+                  ))}
+                </div>
+              )}
+              {own.demographics.porCidade?.length > 0 && (
+                <div className="card">
+                  <p className="card-title">Principais cidades</p>
+                  {own.demographics.porCidade.map((c: any) => (
+                    <p key={c.cidade} style={{ fontSize: 13, marginTop: 4 }}>{c.cidade}: <b>{c.valor}</b></p>
+                  ))}
+                </div>
+              )}
+              {own.demographics.porIdadeGenero?.length > 0 && (
+                <div className="card">
+                  <p className="card-title">Faixa etária / gênero</p>
+                  {own.demographics.porIdadeGenero.slice(0, 6).map((d: any, i: number) => (
+                    <p key={i} style={{ fontSize: 13, marginTop: 4 }}>
+                      {d.faixaEtaria} · {d.genero}: <b>{d.valor}</b>
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
+              Ainda não disponível — exige a permissão de insights e no mínimo 100 seguidores.
+            </p>
+          )}
+
+          {own.onlineFollowers?.length > 0 && (
+            <div className="card" style={{ marginTop: 12 }}>
+              <p className="card-title">Horários de maior atividade dos seguidores</p>
+              {own.onlineFollowers.map((h: any) => (
+                <p key={h.hora} style={{ fontSize: 13, marginTop: 4 }}>
+                  {h.hora}h — <b>{h.quantidade}</b> seguidores online
+                </p>
+              ))}
+            </div>
+          )}
+
+          {/* Stories e Lives — limitação real da API */}
+          <div className="section-header" style={{ marginTop: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 15, margin: 0, color: "var(--text-muted)" }}>
+              Stories e Transmissões ao vivo
+            </h2>
+          </div>
+          <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
+            A API da Meta só permite ler insights de Stories enquanto estão no ar (24h) e de Lives
+            enquanto estão acontecendo — não existe endpoint de histórico para nenhum dos dois depois
+            que terminam. Pra ter esses dados aqui, seria necessário monitorar em tempo real (fica
+            como possível melhoria futura).
+          </p>
+
+          {own.aggregates?.topPost && (
+            <div className="card" style={{ marginTop: 20 }}>
+              <p className="card-title">Post com mais curtidas recentemente</p>
+              <a
+                href={own.aggregates.topPost.permalink}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: "flex", gap: 14, marginTop: 10, alignItems: "center" }}
+              >
+                <img
+                  src={own.aggregates.topPost.thumbnail_url || own.aggregates.topPost.media_url}
+                  alt="top post"
+                  style={{ width: 64, height: 64, borderRadius: 8, objectFit: "cover" }}
+                />
+                <div>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>
+                    ♥ {own.aggregates.topPost.like_count ?? 0} · 💬 {own.aggregates.topPost.comments_count ?? 0}
+                  </p>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", maxWidth: 400 }}>
+                    {own.aggregates.topPost.caption?.slice(0, 90) ?? "sem legenda"}
+                  </p>
+                </div>
+              </a>
+            </div>
+          )}
+
+          {/* Grade de posts com insights individuais (curtidas, salvamentos, alcance, plays) */}
+          <div className="section-header" style={{ marginTop: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 15, margin: 0, color: "var(--text-muted)" }}>
+              Publicações recentes (detalhado)
+            </h2>
+          </div>
+
           {own.media?.length > 0 && (
             <div className="posts-grid">
-              {own.media.map((post: any) => (
-                <a key={post.id} href={post.permalink} target="_blank" rel="noreferrer" className="post-thumb">
-                  <img src={post.thumbnail_url || post.media_url} alt={post.caption?.slice(0, 40) || "post"} />
-                  <div className="post-thumb-stats">
-                    <span>♥ {post.like_count ?? 0}</span>
-                    <span>💬 {post.comments_count ?? 0}</span>
-                  </div>
-                </a>
-              ))}
+              {own.media.map((post: any) => {
+                const pi = own.postInsights?.[post.id] ?? {};
+                return (
+                  <a key={post.id} href={post.permalink} target="_blank" rel="noreferrer" className="post-thumb" title={
+                    Object.entries(pi).map(([k, v]) => `${k}: ${v}`).join(" · ") || "sem insights disponíveis"
+                  }>
+                    <img src={post.thumbnail_url || post.media_url} alt={post.caption?.slice(0, 40) || "post"} />
+                    <div className="post-thumb-stats">
+                      <span>♥ {post.like_count ?? 0}</span>
+                      <span>💬 {post.comments_count ?? 0}</span>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           )}
         </>
