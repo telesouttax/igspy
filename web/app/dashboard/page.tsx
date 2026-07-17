@@ -38,7 +38,8 @@ async function getInsights() {
 }
 
 export default async function DashboardPage() {
-  const [own, insights] = await Promise.all([getOwnProfile(), getInsights()]);
+  const [ownRaw, insights] = await Promise.all([getOwnProfile(), getInsights()]);
+  const own: any = ownRaw;
 
   return (
     <>
