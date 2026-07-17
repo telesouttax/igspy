@@ -35,6 +35,9 @@ export default function AdsLibraryPage() {
       <p className="subtitle">
         Busca oficial na Ad Library da Meta — veja o que marcas/perfis do seu nicho estão anunciando.
       </p>
+      <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 20 }}>
+        Filtro fixo: <strong>Brasil</strong> · <strong>Todos os anúncios</strong> (não só político/eleitoral)
+      </p>
 
       <form onSubmit={handleSearch} style={{ display: "flex", gap: 10, marginBottom: 24, maxWidth: 500 }}>
         <input
