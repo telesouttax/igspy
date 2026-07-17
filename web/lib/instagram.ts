@@ -123,4 +123,3 @@ export async function getOwnProfileMetrics(accessToken: string) {
     accountInsights,
   };
 }
-}
