@@ -60,6 +60,10 @@ export default async function DashboardPage() {
       <h1>Visão geral</h1>
       <p className="subtitle">Seu perfil, lado a lado com o que está performando no seu nicho.</p>
 
+      <div style={{ background: "red", color: "white", padding: 20, fontSize: 24, fontWeight: 900, marginBottom: 20 }}>
+        MARCADOR-DE-VERSAO-XYZ-789
+      </div>
+
       <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", marginBottom: 16, wordBreak: "break-all" }}>
         {own?.erro || own?._debugBanner || "[DEBUG] own está null/undefined"}
       </p>
