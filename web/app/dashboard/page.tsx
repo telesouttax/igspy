@@ -6,15 +6,23 @@ export const dynamic = "force-dynamic";
 
 async function getOwnProfile() {
   const supabase = getSupabaseAdmin();
-  const { data, error: dbError } = await supabase
+  const { data, error: dbError, count } = await supabase
     .from("instagram_accounts")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (dbError) return { erro: `Erro ao ler o Supabase: ${dbError.message}` };
-  if (!data) return null;
+  if (dbError) {
+    return {
+      erro: `[DEBUG] Erro ao ler o Supabase: ${dbError.message} | code: ${dbError.code} | url: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`,
+    };
+  }
+  if (!data) {
+    return {
+      erro: `[DEBUG] Query rodou sem erro mas não achou linha nenhuma. count=${count}. url: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`,
+    };
+  }
 
   try {
     return await getOwnProfileMetrics(data.access_token);
