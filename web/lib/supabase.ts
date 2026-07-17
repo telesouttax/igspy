@@ -13,5 +13,11 @@ export function getSupabaseAdmin() {
 
   return createClient(url, key, {
     auth: { persistSession: false },
+    global: {
+      // Força o Next.js a nunca usar o Data Cache para as chamadas do Supabase —
+      // sem isso, respostas antigas podem ficar "presas" em cache entre deploys.
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: "no-store" }),
+    },
   });
 }
