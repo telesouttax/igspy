@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="nav-group">
               <div className="nav-label">Painel</div>
               <a href="/dashboard">Visão geral</a>
+              <a href="/dashboard/ads-library">Biblioteca de Anúncios</a>
             </nav>
           </aside>
           <main className="main">{children}</main>
