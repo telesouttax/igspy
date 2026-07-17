@@ -5,19 +5,21 @@ import ConnectInstagramForm from "./ConnectInstagramForm";
 export const dynamic = "force-dynamic";
 
 async function getOwnProfile() {
-  try {
-    const supabase = getSupabaseAdmin();
-    const { data } = await supabase
-      .from("instagram_accounts")
-      .select("*")
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  const supabase = getSupabaseAdmin();
+  const { data, error: dbError } = await supabase
+    .from("instagram_accounts")
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-    if (!data) return null;
+  if (dbError) return { erro: `Erro ao ler o Supabase: ${dbError.message}` };
+  if (!data) return null;
+
+  try {
     return await getOwnProfileMetrics(data.access_token);
-  } catch {
-    return null;
+  } catch (err: any) {
+    return { erro: `Token salvo, mas falhou ao buscar métricas: ${err.message}` };
   }
 }
 
@@ -43,7 +45,12 @@ export default async function DashboardPage() {
       <h1>Visão geral</h1>
       <p className="subtitle">Seu perfil, lado a lado com o que está performando no seu nicho.</p>
 
-      {!own ? (
+      {own?.erro ? (
+        <div className="empty-state" style={{ borderColor: "var(--danger)" }}>
+          <p style={{ marginBottom: 16, color: "var(--danger)" }}>{own.erro}</p>
+          <ConnectInstagramForm />
+        </div>
+      ) : !own ? (
         <div className="empty-state">
           <p style={{ marginBottom: 16 }}>Seu Instagram ainda não está conectado.</p>
           <ConnectInstagramForm />
