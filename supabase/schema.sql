@@ -1,8 +1,9 @@
 -- Rode isso no SQL Editor do seu projeto Supabase (uma vez só)
 
 create table if not exists instagram_accounts (
-  ig_account_id text primary key,
-  page_access_token text not null,
+  ig_user_id text primary key,
+  access_token text not null,
+  username text,
   updated_at timestamptz not null default now()
 );
 
@@ -19,6 +20,12 @@ create table if not exists insights (
   id uuid primary key default gen_random_uuid(),
   scraped_profile_id uuid references scraped_profiles(id) on delete cascade,
   insight jsonb not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists recommendations (
+  id uuid primary key default gen_random_uuid(),
+  recommendation jsonb not null,
   created_at timestamptz not null default now()
 );
 
