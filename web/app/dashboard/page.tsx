@@ -11,6 +11,8 @@ import ConnectInstagramForm from "./ConnectInstagramForm";
 import DisconnectButton from "./DisconnectButton";
 import DeleteInsightButton from "./DeleteInsightButton";
 import GenerateRecommendationsButton from "./GenerateRecommendationsButton";
+import EngagementChart from "./EngagementChart";
+import NicheComparisonChart from "./NicheComparisonChart";
 
 export const dynamic = "force-dynamic";
 
@@ -307,6 +309,12 @@ export default async function DashboardPage() {
             </div>
           )}
 
+          {own.media?.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <EngagementChart media={own.media} />
+            </div>
+          )}
+
           {/* Grade de posts com insights individuais (curtidas, salvamentos, alcance, plays) */}
           <div className="section-header" style={{ marginTop: 28 }}>
             <h2 style={{ fontFamily: "var(--font-display)", fontSize: 15, margin: 0, color: "var(--text-muted)" }}>
@@ -425,7 +433,10 @@ export default async function DashboardPage() {
             "Analisar perfil" — o resultado aparece aqui automaticamente.
           </div>
         ) : (
-          insights.map((item: any) => {
+          <>
+            <NicheComparisonChart insights={insights} />
+            <div style={{ marginTop: 16 }}>
+              {insights.map((item: any) => {
             const ins = item.insight ?? {};
             return (
               <div className="insight-card" key={item.id}>
@@ -470,7 +481,9 @@ export default async function DashboardPage() {
                 </div>
               </div>
             );
-          })
+          })}
+            </div>
+          </>
         )}
       </div>
     </>
