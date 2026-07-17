@@ -7,33 +7,20 @@ export const dynamic = "force-dynamic";
 
 async function getOwnProfile() {
   const supabase = getSupabaseAdmin();
-  const { data: allRows } = await supabase
+  const { data, error: dbError } = await supabase
     .from("instagram_accounts")
-    .select("ig_user_id, username, updated_at");
-
-  const { data, error: dbError, count } = await supabase
-    .from("instagram_accounts")
-    .select("*", { count: "exact" })
+    .select("*")
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  const debugBanner = `[DEBUG ${new Date().toISOString()}] linhas encontradas: ${
-    allRows?.length ?? 0
-  } | ids: ${JSON.stringify(allRows?.map((r) => r.ig_user_id) ?? [])}`;
-
-  if (dbError) {
-    return { erro: `${debugBanner} | erro: ${dbError.message}` };
-  }
-  if (!data) {
-    return { erro: `${debugBanner} | (nenhuma linha via maybeSingle)` };
-  }
+  if (dbError) return { erro: `Erro ao ler o Supabase: ${dbError.message}` };
+  if (!data) return null;
 
   try {
-    const metrics = await getOwnProfileMetrics(data.access_token);
-    return { ...metrics, _debugBanner: debugBanner };
+    return await getOwnProfileMetrics(data.access_token);
   } catch (err: any) {
-    return { erro: `${debugBanner} | falhou ao buscar métricas: ${err.message}` };
+    return { erro: `Token salvo, mas falhou ao buscar métricas: ${err.message}` };
   }
 }
 
@@ -59,14 +46,6 @@ export default async function DashboardPage() {
     <>
       <h1>Visão geral</h1>
       <p className="subtitle">Seu perfil, lado a lado com o que está performando no seu nicho.</p>
-
-      <div style={{ background: "red", color: "white", padding: 20, fontSize: 24, fontWeight: 900, marginBottom: 20 }}>
-        MARCADOR-DE-VERSAO-XYZ-789
-      </div>
-
-      <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", marginBottom: 16, wordBreak: "break-all" }}>
-        {own?.erro || own?._debugBanner || "[DEBUG] own está null/undefined"}
-      </p>
 
       {own?.erro ? (
         <div className="empty-state" style={{ borderColor: "var(--danger)" }}>
